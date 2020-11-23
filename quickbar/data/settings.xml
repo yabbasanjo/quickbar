@@ -1,0 +1,40 @@
+<?xml version="1.1" ?>
+<settings>
+    <global>
+        <commandset>
+            <nukes>
+                <1>gs c nuke 1</1>
+                <2>gs c nuke 2</2>
+                <3>gs c nuke 3</3>
+                <4>gs c nuke 4</4>
+                <5>gs c nuke 5</5>
+                <6>gs c nuke 6</6>
+                <7>gs c nuke 2 helix</7>
+                <8></8>
+                <9></9>
+                <10></10>
+            </nukes>
+            <cures>
+                <1></1>
+                <2></2>
+                <3></3>
+                <4></4>
+                <5></5>
+                <6></6>
+                <7></7>
+                <8></8>
+                <9></9>
+                <10></10>
+            </cures>
+        </commandset>
+        <jobs>
+            <sch>nukes,cures</sch>
+        </jobs>
+        <mode>x</mode>
+        <color>blue</color>
+        <size>3.0</size>
+    </global>
+    <character1>
+        <size>2.5</size>
+    </character1>
+</settings>

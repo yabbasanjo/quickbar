@@ -31,38 +31,25 @@ _addon.author = 'YabbaSanjo'
 _addon.version = '0.1.0.0'
 _addon.commands = {'quickbar','qb'}
 
-local commands = {}
+local commands = require('commands')
+
+local handlers = {} 
 
 local function handle_command(command, ...)
     command = command and command:lower() or 'help'
 
-    if commands[command] then
-        commands[command](...)
+    if handlers[command] then
+        handlers[command](...)
     else
-        commands.help()
+        handlers.help()
     end
 end
 
-local function help()
-    
-end
-
-local function cmd_run()
-    
-end
-
-local function cmd_targetthis()
-    
-end
-
-local function cmd_settarget()
-    
-end
-
-
-commands['help'] = help
-commands['run'] = cmd_run
-commands['st'] = cmd_settarget
-commands['tt'] = cmd_targetthis
+handlers['help'] = commands.help
+handlers['run'] = commands.run
+handlers['c'] = commands.run
+handlers['st'] = commands.settarget
+handlers['tt'] = commands.targetthis
+handlers['mode'] = commands.mode
 
 windower.register_event('addon command', handle_command)
