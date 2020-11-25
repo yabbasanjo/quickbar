@@ -28,28 +28,52 @@
 
 _addon.name = 'quickbar'
 _addon.author = 'YabbaSanjo'
-_addon.version = '0.1.0.0'
+_addon.version = '0.0.0.1'
 _addon.commands = {'quickbar','qb'}
 
+require('tables')
+
+local config = require('config')
+local defaults = require('defaults')
+settings = config.load(defaults)
+
+--helps = require('helpers')
 local commands = require('commands')
 
 local handlers = {} 
 
-local function handle_command(command, ...)
-    command = command and command:lower() or 'help'
-
-    if handlers[command] then
-        handlers[command](...)
+local function handle_command(cmd, ...)
+    local cmd = cmd or 'help'
+    if handlers[cmd] then
+        local msg = handlers[cmd](unpack({...}))
+        if msg then
+            error(msg)
+        end
     else
-        handlers.help()
+        error("Unknown command %s":format(cmd))
     end
 end
+-- local function handle_command(command, ...)
+--     local command = command and command:lower() or 'help'
+
+--     if handlers[command] then
+--         handlers[command](...)
+--     else
+--         handlers.help()
+--     end
+-- end
 
 handlers['help'] = commands.help
 handlers['run'] = commands.run
 handlers['c'] = commands.run
+handlers['exec'] = commands.execute
+handlers['e'] = commands.execute
 handlers['st'] = commands.settarget
 handlers['tt'] = commands.targetthis
 handlers['mode'] = commands.mode
+handlers['save'] = commands.save
+handlers['load'] = commands.load
+handlers['delay'] = commands.senddelay
+handlers['d'] = commands.senddelay
 
 windower.register_event('addon command', handle_command)
