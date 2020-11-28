@@ -30,7 +30,6 @@ Cycles through named Command Sets. This will be configurable by job later.
 
 Uses the Direct Input Keyboard (DIK) Code for key binds, referenced in https://docs.windower.net/commands/keymapping/
 
-# chat input modifier
 Always uses the % modifier so macros wont fire when typing in chat, referenced from https://docs.windower.net/commands/input/
 
 ```
