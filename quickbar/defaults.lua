@@ -3,6 +3,11 @@ local defaults = {
     sendothers = false,
     mode='nukes',
     senddelay = '0.2',
+    queue = {
+        command = '',
+        target = '',
+        custom = ''
+    },
     keybinds = {
         DIK_1 = 'qb c 1',
         DIK_2 = 'qb c 2',

@@ -37,7 +37,6 @@ local config = require('config')
 local defaults = require('defaults')
 settings = config.load(defaults)
 
---helps = require('helpers')
 local commands = require('commands')
 
 local handlers = {} 
@@ -53,15 +52,20 @@ local function handle_command(cmd, ...)
         error("Unknown command %s":format(cmd))
     end
 end
--- local function handle_command(command, ...)
---     local command = command and command:lower() or 'help'
 
---     if handlers[command] then
---         handlers[command](...)
---     else
---         handlers.help()
---     end
--- end
+local function receive_target(index)
+    if index ~= 0 then
+        local mob = windower.ffxi.get_mob_by_index(index)
+        if commands.queue ~= nil then
+            
+            if tostring(commands.queue.target) == tostring(mob.id) then
+                commands.execute(commands.queue.id, commands.queue.target, commands.queue.custom)
+                commands.queue = nil
+            end
+        end
+    end
+end
+
 
 handlers['help'] = commands.help
 handlers['run'] = commands.run
@@ -77,3 +81,6 @@ handlers['delay'] = commands.senddelay
 handlers['d'] = commands.senddelay
 
 windower.register_event('addon command', handle_command)
+windower.register_event('target change', receive_target)
+coroutine.sleep(.1)
+windower.send_command('qb load')

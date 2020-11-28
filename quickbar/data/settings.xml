@@ -36,9 +36,9 @@
                 <5>gs c nuke 5</5>
                 <6>gs c nuke 6</6>
                 <7>gs c nuke 2 helix</7>
-                <8></8>
-                <9></9>
-                <0></0>
+                <8>input /ebullience</8>
+                <9>input /focalization</9>
+                <0>input /addendumblack; wait 1; input /darkarts</0>
             </nukes>
             <cures>
                 <1></1>

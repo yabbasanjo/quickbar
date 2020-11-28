@@ -1,8 +1,12 @@
+ --#region Variables
 local c = {}
 local CONST_QB_SEND_OTHERS = 'send @others qb exec %d %s'
-local CONST_ST_SEND_OTHERS = 'send @others st '
+local CONST_QB_TARGET_THIS = 'send @others qb tt '
 local CONST_QB_INPUT_CMD = 'input %s'
 local CONST_QB_CMD_TARG = '%s %s'
+
+local CONST_ST_SEND_OTHERS = 'send @others st '
+
 local CONST_KEY_MAP = {
     ['DIK_GRAVE'] = '`',
     ['DIK_ESCAPE'] = 'escape',
@@ -139,24 +143,22 @@ local CONST_KEY_MAP = {
     ['DIK_WEBSTOP'] = 'webstop',
 }
 local CONST_VAL_MAP = nil
+--#endregion
 
+ --#region Interface
 
----------------------------
--- help
----------------------------
+ --#region help
 function c.help()
     print('help stuff soon')
 end
+--#endregion
 
----------------------------
--- save
----------------------------
+ --#region save
 function c.save(name)
 end
+--#endregion
 
----------------------------
--- load
----------------------------
+ --#region load
 function c.load()
 
     print('quickbar: binding default keys')
@@ -171,16 +173,14 @@ function c.load()
     CONST_VAL_MAP = table_invert(CONST_KEY_MAP)
     
 end
+--#endregion
 
----------------------------
--- run
----------------------------
+ --#region c.run
 function c.run(cmdNumber, cmdTarget, cmdCustom)
     local input = ''
     local targ = ''
-    print(cmdNumber)
-    print(settings.target)
-
+    local tmpTarg = gettarget()
+    
     if settings.target ~= '' then
         targ = settings.target
     end
@@ -189,33 +189,22 @@ function c.run(cmdNumber, cmdTarget, cmdCustom)
         targ = gettarget()
     end
 
+    input = create_command(cmdNumber, targ, cmdCustom)
+
     --send target to others ahead of time before commands are sent
     if settings.sendothers then
-        print('sending ', targ)
+        windower.send_command(string.format(CONST_QB_SEND_OTHERS, cmdNumber, targ))
         windower.send_command(CONST_ST_SEND_OTHERS..targ)
     end
 
-    if cmdNumber == '0' then
-        input = create_command(cmdCustom, settings.target)
-    else
-        input = create_command(cmdNumber, settings.target)
-    end
-
-    if settings.sendothers then
-        if settings.senddelay ~= '' then
-            coroutine.sleep(settings.senddelay)
-        end
-        windower.send_command(string.format(CONST_QB_SEND_OTHERS, cmdNumber, targ))
-    end
 end
+--#endregion
 
----------------------------
--- execute
----------------------------
+ --#region execute
 function c.execute(cmdNumber, cmdTarget, cmdCustom)
     local input = ''
     local targ = ''
-
+    local targCurrent = gettarget()
     
     if settings.target ~= '' then
         targ = settings.target
@@ -225,46 +214,52 @@ function c.execute(cmdNumber, cmdTarget, cmdCustom)
         targ = cmdTarget
     end
 
-    if cmdNumber == '0' then
-        input = create_command(cmdCustom, targ)
+    if tostring(targ) == tostring(targCurrent) then
+        input = create_command(cmdNumber, targ, cmdCustom)
     else
-        input = create_command(cmdNumber, targ)
+        c.queue = {
+            id = cmdNumber,
+            target = targ,
+            custom = cmdCustom
+        }
     end
 end
----------------------------
--- targetthis
----------------------------
+--#endregion
+
+ --#region targetthis
 function c.targetthis(target)
-    settings.target = target
+    
     if target == nil then 
         settings.target = ''
+    else
+        settings.target = target
     end
 
     windower.add_to_chat(204, 'Target '..settings.target)
 
     return t
 end
+--#endregion
 
----------------------------
--- settarget
----------------------------
+ --#region settarget()
 function c.settarget()
-    local t = gettarget()
+    local targ = gettarget()
 
-    if t == '' then
+    settings.target = targ
+    if targ == '' then
         send_to_others()
     else
         send_to_others(true)
     end  
 
-    settings.target = t
+    windower.send_command(CONST_QB_TARGET_THIS..settings.target)
+    
 
     windower.add_to_chat(204, 'Target Saved '..settings.target)
 end
+--#endregion
 
----------------------------
--- mode
----------------------------
+ --#region c.mode(selector)
 function c.mode(selector)
     local t = {}
     local itbl = 1
@@ -323,25 +318,29 @@ function c.mode(selector)
 
     print(settings.mode)
 end
+--#endregion
 
+ --#region senddelay
 function c.senddelay(delay)
     settings.senddelay = delay
 end
+--#endregion
 
+--#endregion
 
+ --#region Internal Functions
 
--- create_command
----------------------------
-function create_command(command, target)
+ --#region create_command
+function create_command(number, target, custom)
     if target == nil then target = '' end
-
-    local input = settings.commandsets[settings.mode][CONST_VAL_MAP[command]]
     local targ = ''
-    
-    if (string.find(input,'<st') ~= nil or string.find(input,'<me>') ~= nil) then
-        targ = ''
+    local input = ''
+    if number == '0' then
+        input = custom
+    else
+        input = settings.commandsets[settings.mode][number]
     end
-
+    
     if string.find(input,' <TT>') ~= nil then
         input = string.gsub(input, ' <TT>', '');
         targ = gettarget();
@@ -349,6 +348,10 @@ function create_command(command, target)
 
     if target ~= '' then
         targ = target
+    end
+
+    if (string.find(input,'<st') ~= nil or string.find(input,'<me>') ~= nil) then
+        targ = ''
     end
 
     --handle /commands
@@ -359,43 +362,18 @@ function create_command(command, target)
         end
     end
 
-
     --handle nukes or gearswap commands
     input = string.format(CONST_QB_CMD_TARG, input, targ)
 
-    --TODO: old, hopefully replace with gs c nuke T5 etc
-    -- if state.QuickBar.value == 'Nukes' then	
-    --     if p < 7 then
-    --         if targ == 0 then 
-    --             targ = '' 
-    --         end
-    --         input = string.format('%s%s%d %s', input, state.OffenseElement.value, p, targ)
-    --         add_to_chat(123, 'nuke'..input)
-    --     end
-    -- else
-    --     add_to_chat(123, 'Target: '..targ)
-    --     input = string.format('%s %s', input, targ)
-    --     add_to_chat(123, 'Formatted Input: '..input)
-    -- end
-
     input = string.gsub(input, '"','\"')
 
-    -- TODO: old, not sure whyyyyy im doing it this way..
-    -- if not targ == '' then
-			
-    -- else
-    --     send_command(input)
-    -- end 
-    print('quickbar: ', input)
     windower.send_command(input)
-
 
     return input 
 end
+--#endregion
 
-
--- gettarget
----------------------------
+ --#region gettarget()
 function gettarget()
     local mob = windower.ffxi.get_mob_by_target('st') or windower.ffxi.get_mob_by_target('t')
     if mob and mob.id > 0 then
@@ -405,21 +383,24 @@ function gettarget()
     end
     return ''
 end
+--#endregion
 
-
--- send_to_others
----------------------------
+ --#region send_to_others
 function send_to_others(value)
     if value == nil then
         settings.sendothers = not settings.sendothers;
     else
         settings.sendothers = value;
     end 
+
+    
     
     print('Send Target: ', (settings.sendothers and 'ON' or 'OFF'))
     
 end
+--#endregion
 
+ --#region table_invert
 function table_invert(t)
     local s={}
     for k,v in pairs(t) do
@@ -427,5 +408,9 @@ function table_invert(t)
     end
     return s
  end
+--#endregion
+
+--#endregion
+
 
 return c
