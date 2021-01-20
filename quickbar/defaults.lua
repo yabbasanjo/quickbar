@@ -20,7 +20,8 @@ local defaults = {
         DIK_9 = 'qb c 9',
         DIK_0 = 'qb c 10',
         DIK_EQUALS = 'qb mode d',
-        DIK_BACK = 'qb mode u'
+        DIK_BACK = 'qb mode u',
+        DIK_GRAVE = 'qb st'
     },
     commandsets = {
         default = {

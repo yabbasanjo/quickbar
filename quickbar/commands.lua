@@ -160,14 +160,15 @@ end
 
  --#region load
 function c.load()
-
+    local strbind = ''
     print('quickbar: binding default keys')
     for k,v in pairs(settings.keybinds) do
-        --windower.add_to_chat(204,string.format('%s %s', CONST_KEY_MAP[k], v))
-        --coroutine.sleep(.1)
-        --windower.send_command(string.format('bind %%s %s', CONST_KEY_MAP[k], v))
         windower.send_command('bind %'..CONST_KEY_MAP[k]..' '..v)
-        
+        if string.find(v, ' mode ') ~= nil then
+            windower.send_command('bind %~'..CONST_KEY_MAP[k]..' send @others '..v)
+        else
+            windower.send_command('bind %~'..CONST_KEY_MAP[k]..' '..string.gsub(v, 'qb c ', 'qb s '))
+        end
     end
 
     CONST_VAL_MAP = table_invert(CONST_KEY_MAP)
@@ -181,6 +182,11 @@ function c.run(cmdNumber, cmdTarget, cmdCustom)
     local targ = ''
     local tmpTarg = gettarget()
     
+    print('cmdTarget: ', cmdTarget)
+    if cmdTarget ~= nil then
+        targ = cmdTarget
+    end
+
     if settings.target ~= '' then
         targ = settings.target
     end
@@ -200,8 +206,34 @@ function c.run(cmdNumber, cmdTarget, cmdCustom)
 end
 --#endregion
 
+--#region
+function c.send(cmdNumber, cmdTarget, cmdCustom)
+    print('sending only to others')
+    local input = ''
+    local targ = ''
+    local tmpTarg = gettarget()
+    
+    if settings.target ~= '' then
+        targ = settings.target
+    end
+
+    if targ == '' then
+        targ = gettarget()
+    end
+
+    if targ == '' then
+        targ = '<me>'
+    end
+    print(string.format(CONST_QB_SEND_OTHERS, cmdNumber, targ))
+    windower.send_command(string.format(CONST_QB_SEND_OTHERS, cmdNumber, targ))
+    windower.send_command(CONST_ST_SEND_OTHERS..targ)
+end
+--#endregion
+
  --#region execute
 function c.execute(cmdNumber, cmdTarget, cmdCustom)
+    print('CMD: ', cmdNumber)
+    print('TRG: ', cmdTarget)
     local input = ''
     local targ = ''
     local targCurrent = gettarget()
@@ -211,12 +243,16 @@ function c.execute(cmdNumber, cmdTarget, cmdCustom)
     end
 
     if targ == '' then
-        targ = cmdTarget
+        targ = cmdTarget or ''
     end
 
-    if tostring(targ) == tostring(targCurrent) then
+    -- need to either look up the command's target before hand to determine if we should queue or create, orrrr need to 
+
+    if targ == '<me>' or targ == '' or tostring(targ) == tostring(targCurrent) then
+        print('executing')
         input = create_command(cmdNumber, targ, cmdCustom)
     else
+        print('queueing')
         c.queue = {
             id = cmdNumber,
             target = targ,
@@ -333,24 +369,31 @@ end
  --#region create_command
 function create_command(number, target, custom)
     if target == nil then target = '' end
+    
     local targ = ''
     local input = ''
+    
     if number == '0' then
         input = custom
     else
         input = settings.commandsets[settings.mode][number]
     end
-    
-    if string.find(input,' <TT>') ~= nil then
-        input = string.gsub(input, ' <TT>', '');
-        targ = gettarget();
-    end
 
+    if type(input) ~= 'string' then 
+        return ''
+    end
+    
+    --temporary: so that we dont have to &lt;me&gt; in xml, we'll replace it until we get some input commands
+    local me, iend = string.find(input, ' me')
+    if me ~= nil and iend == string.len(input) then
+        input = string.gsub(input,' me', ' <me>')
+    end
+    
     if target ~= '' then
         targ = target
     end
 
-    if (string.find(input,'<st') ~= nil or string.find(input,'<me>') ~= nil) then
+    if string.find(input,'<st') ~= nil or string.find(input,'<me>') ~= nil then
         targ = ''
     end
 
@@ -387,16 +430,8 @@ end
 
  --#region send_to_others
 function send_to_others(value)
-    if value == nil then
-        settings.sendothers = not settings.sendothers;
-    else
-        settings.sendothers = value;
-    end 
-
-    
-    
-    print('Send Target: ', (settings.sendothers and 'ON' or 'OFF'))
-    
+    settings.sendothers = not settings.sendothers;
+    print('Send Target: ', (settings.sendothers and 'ON' or 'OFF'))    
 end
 --#endregion
 

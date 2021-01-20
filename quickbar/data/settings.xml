@@ -14,6 +14,7 @@
             <DIK_0>qb c 10</DIK_0>
             <DIK_EQUALS>qb mode d</DIK_EQUALS>
             <DIK_BACK>qb mode u</DIK_BACK>
+            <DIK_GRAVE>qb st</DIK_GRAVE>
         </keybinds>
         <commandsets>
             <default>
@@ -26,7 +27,7 @@
                 <7></7>
                 <8></8>
                 <9></9>
-                <0></0>
+                <10></10>
             </default>
             <nukes>
                 <1>gs c nuke 1</1>
@@ -36,9 +37,9 @@
                 <5>gs c nuke 5</5>
                 <6>gs c nuke 6</6>
                 <7>gs c nuke 2 helix</7>
-                <8>input /ebullience</8>
-                <9>input /focalization</9>
-                <0>input /addendumblack; wait 1; input /darkarts</0>
+                <8>/ebullience me</8>
+                <9>gs c nuke 2 storm me</9>
+                <10>/addendumblack; wait 1; /darkarts</10>
             </nukes>
             <cures>
                 <1></1>
@@ -50,8 +51,20 @@
                 <7></7>
                 <8></8>
                 <9></9>
-                <0></0>
+                <10></10>
             </cures>
+            <geoburst>
+                <1>gs c nuke 2</1>
+                <2>gs c nuke 3</2>
+                <3>gs c nuke 4</3>
+                <4>gs c nuke 5</4>
+                <5></5>
+                <6>/entrust</6>
+                <7></7>
+                <8></8>
+                <9>/indiacumen me</9>
+                <10>/geomalaise</10>
+            </geoburst>
         </commandsets>
         <jobs>
             <sch>nukes,cures</sch>
